@@ -1,0 +1,56 @@
+# Stage-1 literature discovery configuration.
+year_from: 1960
+year_to: 2026
+max_results_per_query: 100   # per source, per query
+fuzzy_title_threshold: 0.93
+enrich_web_dois_via_crossref: true
+
+sources:
+  openalex:
+    enabled: true
+    per_page: 100
+    min_interval_s: 0.2
+    document_types: [article, preprint]
+    # OA-aware discovery: only papers with a PubMed Central copy (legal JATS full text via Europe PMC).
+    # Measured 2026-11-05: without it only 2/40 discovered papers had OA full text.
+    extra_filters: ["has_pmcid:true"]
+  crossref:
+    enabled: true
+    rows: 100
+    min_interval_s: 0.5
+    document_types: [journal-article, proceedings-article]
+    # OA-venue filter (journals whose articles are in Europe PMC's open-access subset).
+    # Measured 2026-11-05, top-10 results with OA JATS: Polymers 10/10, ACS Omega 10/10, Materials 10/10,
+    # RSC Advances 2/10, Macromolecules 0/10 (paywalled) -> keep the first three.
+    extra_filters: ["issn:2073-4360", "issn:2470-1343", "issn:1996-1944"]
+  websearch:
+    enabled: true
+    max_results: 20          # web search is best-effort and thin; kept small
+    min_interval_s: 3.0
+    query_suffix: ""
+
+# Queries combine molecular-weight / MWD vocabulary with property vocabulary, optionally a family.
+# They aim for recall; precision comes from the deterministic filters.
+queries:
+  - molecular weight dependence of glass transition temperature polymer
+  - molecular weight distribution effect on glass transition temperature
+  - dispersity effect on polymer properties
+  - molecular weight distribution rheology polymer melt
+  - zero shear viscosity molecular weight polymer melt
+  - polydispersity viscoelastic properties linear polymer
+  - bimodal molecular weight distribution blend rheology
+  - molecular weight distribution mechanical properties amorphous polymer
+  - molecular weight tensile strength glassy polymer
+  - molecular weight fracture toughness polystyrene
+  - polystyrene molecular weight glass transition Flory-Fox
+  - poly(methyl methacrylate) molecular weight glass transition
+  - polycarbonate molecular weight rheology
+  - polyisoprene molecular weight distribution viscoelastic
+  - polybutadiene molecular weight distribution rheology
+  - polyisobutylene molecular weight viscosity
+  - poly(vinyl chloride) molecular weight mechanical properties
+  - poly(dimethylsiloxane) molecular weight viscosity
+  - dispersity controlled polymerization thermal properties
+  - tailoring molecular weight distribution shape polymer properties
+  - skewness molecular weight distribution polymer
+  - storage modulus loss modulus molecular weight distribution

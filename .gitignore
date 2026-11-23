@@ -1,0 +1,44 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated datasets
+data/raw/
+data/processed/
+
+# Model artifacts
+models/checkpoints/
+
+# IDE
+.vscode/
+
+# Local pipeline state
+data/cache/
+data/db/
+data/runs/
+*.sqlite
+*.sqlite3
+
+# Packaging
+*.egg-info/
+build/
+dist/
+tests.zip

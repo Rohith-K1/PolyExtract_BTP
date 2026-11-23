@@ -1,0 +1,531 @@
+<title>PolyExtract Progress Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: a report with a narrow margin column for plain-language notes. Notebook feel, GPC-trace blue as the one accent. */
+:root {
+  --paper: #F1F4F8;
+  --sheet: #FFFFFF;
+  --ink: #12203A;
+  --ink-soft: #465469;
+  --rule: #C8D1DE;
+  --blue: #1D5AD0;
+  --tint-blue: #E1EAFB;
+  --amber: #C98300;
+  --tint-amber: #FBEBC4;
+  --ok: #17775A;
+  --warn: #B3600B;
+  --no: #B22E3A;
+  --grid: rgba(18, 32, 58, .06);
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --text: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C1524; --sheet: #121F34; --ink: #E7EDF6; --ink-soft: #9FACC1; --rule: #28374F;
+    --blue: #7BA3FF; --tint-blue: #172A4B; --amber: #F0B53C; --tint-amber: #35290C;
+    --ok: #55C9A0; --warn: #EBA552; --no: #F27F89; --grid: rgba(231, 237, 246, .06);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0C1524; --sheet: #121F34; --ink: #E7EDF6; --ink-soft: #9FACC1; --rule: #28374F;
+  --blue: #7BA3FF; --tint-blue: #172A4B; --amber: #F0B53C; --tint-amber: #35290C;
+  --ok: #55C9A0; --warn: #EBA552; --no: #F27F89; --grid: rgba(231, 237, 246, .06);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 1.0625rem; line-height: 1.62;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 2.5rem 4rem;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 66rem; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.12; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(2rem, 5.2vw, 3.4rem); font-weight: 700; max-width: 18ch; }
+h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); font-weight: 700; margin-bottom: 1rem; }
+h3 { font-size: 1.12rem; font-weight: 700; }
+p { margin: 0 0 1rem; }
+a { color: var(--blue); }
+.mono { font-family: var(--mono); font-size: .86em; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* masthead */
+.masthead { padding-block: 1rem 2.5rem; }
+.meta { font-family: var(--mono); font-size: .8rem; color: var(--ink-soft); margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
+.lede { max-width: 40rem; font-size: 1.22rem; line-height: 1.55; margin-top: 1.5rem; }
+
+/* sections with margin column */
+.sec { display: grid; grid-template-columns: minmax(0, 1fr) 15.5rem; column-gap: 3.25rem; margin-block: 3.75rem; }
+.sec > .main { min-width: 0; max-width: 41rem; }
+.sec > .aside { min-width: 0; align-self: start; font-family: var(--display); font-size: .88rem; line-height: 1.5; color: var(--ink-soft); padding-top: .4rem; }
+.aside .tag { display: block; font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); margin-bottom: .35rem; }
+.aside p { margin: 0 0 1rem; }
+.aside { border-top: 1px dotted var(--ink-soft); }
+@media (max-width: 880px) {
+  .sec { grid-template-columns: minmax(0, 1fr); row-gap: 1.25rem; margin-block: 3rem; }
+  .sec > .aside { max-width: 41rem; padding-top: .8rem; }
+}
+
+/* ledger */
+.ledger { margin: 0; padding: 0; }
+.ledger .row { display: grid; grid-template-columns: auto 1fr auto; gap: .55rem; align-items: baseline; padding-block: .32rem; }
+.ledger dt { margin: 0; min-width: 0; }
+.ledger dd { margin: 0; font-family: var(--mono); font-weight: 500; font-size: .95rem; text-align: right; }
+.ledger .lead { border-bottom: 1px dotted var(--ink-soft); height: .6em; opacity: .7; }
+.ledger .gap dd, .ledger .gap dt { background: linear-gradient(transparent 62%, var(--tint-amber) 62%); }
+@media (max-width: 520px) { .ledger .row { grid-template-columns: 1fr auto; } .ledger .lead { display: none; } }
+
+/* figures */
+figure { margin: 1.75rem 0; padding: 1.1rem 1.1rem .9rem; background: var(--sheet); border: 1px solid var(--rule);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 18px 18px; }
+figcaption { font-family: var(--display); font-size: .86rem; color: var(--ink-soft); margin-top: .7rem; line-height: 1.45; }
+svg { display: block; width: 100%; height: auto; }
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+svg .soft { fill: var(--ink-soft); }
+.curve { fill: var(--tint-blue); stroke: var(--blue); stroke-width: 2.4; }
+.axis { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.mk { stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.mk-amber { stroke: var(--amber); stroke-width: 2; }
+.pt { fill: var(--blue); stroke: var(--sheet); stroke-width: 2; }
+
+/* steps */
+.steps { list-style: none; counter-reset: s; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1.5rem; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); column-gap: .75rem; }
+.steps li::before { content: counter(s); font-family: var(--display); font-weight: 700; font-size: 1.15rem; width: 2rem; height: 2rem; display: grid; place-items: center;
+  border: 1.5px solid var(--ink); border-radius: 50%; margin-top: .1rem; }
+.steps h3 { margin-bottom: .2rem; }
+.steps p { margin: 0 0 .4rem; }
+.sofar { font-family: var(--mono); font-size: .8rem; color: var(--ink-soft); }
+.sofar b { color: var(--ink); font-weight: 500; }
+
+/* bar lists */
+.bars { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.bars li { display: grid; grid-template-columns: 12.5rem minmax(0, 1fr) 4.2rem; gap: .8rem; align-items: center; font-size: .95rem; }
+.bars .lab { font-family: var(--display); font-size: .9rem; line-height: 1.25; }
+.bars .track { height: .85rem; background: var(--tint-blue); display: block; }
+.bars .fill { display: block; height: 100%; background: var(--blue); min-width: 3px; }
+.bars .val { font-family: var(--mono); font-size: .82rem; text-align: right; }
+@media (max-width: 560px) { .bars li { grid-template-columns: minmax(0, 1fr) 4.2rem; } .bars .track { grid-column: 1 / -1; grid-row: 2; } }
+
+.stack { display: flex; height: 1.9rem; margin: .5rem 0 .7rem; overflow: hidden; }
+.stack span { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: .3rem 1.4rem; font-family: var(--display); font-size: .88rem; margin: 0; padding: 0; list-style: none; }
+.legend i { display: inline-block; width: .8rem; height: .8rem; margin-right: .4rem; vertical-align: -.05em; }
+
+/* specimen card */
+.specimen { background: var(--sheet); border: 1.5px solid var(--ink); margin: 1.5rem 0; }
+.specimen header { padding: .85rem 1.1rem; border-bottom: 1.5px solid var(--ink); }
+.specimen header h3 { font-size: 1.02rem; margin-bottom: .15rem; }
+.specimen .src { font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); margin: 0; overflow-wrap: anywhere; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; }
+.pair > div { padding: .9rem 1.1rem; min-width: 0; }
+.pair > div + div { border-left: 1px dashed var(--ink-soft); }
+.pair h4 { font-family: var(--display); font-size: 1rem; margin: 0 0 .5rem; }
+.kv { margin: 0; font-family: var(--mono); font-size: .84rem; display: grid; gap: .22rem; }
+.kv div { display: flex; justify-content: space-between; gap: 1rem; }
+.kv dt { color: var(--ink-soft); } .kv dd { margin: 0; font-weight: 500; }
+.specimen blockquote { margin: 0; padding: .9rem 1.1rem; border-top: 1.5px solid var(--ink); font-style: italic; font-size: .98rem; }
+.specimen footer { padding: .6rem 1.1rem; border-top: 1px dashed var(--ink-soft); font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+@media (max-width: 560px) { .pair { grid-template-columns: 1fr; } .pair > div + div { border-left: 0; border-top: 1px dashed var(--ink-soft); } }
+
+/* cases */
+.cases { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1.6rem; }
+.cases li { min-width: 0; }
+.cases .kind { font-family: var(--mono); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--warn); }
+.cases h3 { margin: .1rem 0 .3rem; }
+.cases p { margin: 0; }
+
+/* table */
+.tiers { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .98rem; }
+.tiers th, .tiers td { text-align: left; vertical-align: top; padding: .7rem .8rem .7rem 0; border-bottom: 1px solid var(--rule); }
+.tiers th { font-family: var(--display); font-size: .86rem; color: var(--ink-soft); font-weight: 500; }
+.tiers td:nth-child(2) { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+.scroll { overflow-x: auto; }
+
+/* audit dots */
+.dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; max-width: 24rem; margin: .8rem 0 .5rem; }
+.dots span { aspect-ratio: 1; background: transparent; border: 1.5px solid var(--rule); }
+.dots .y { background: var(--ok); border-color: var(--ok); }
+.dots .n { background: var(--no); border-color: var(--no); }
+
+ul.plain { margin: 0 0 1rem; padding-left: 1.2rem; }
+ul.plain li { margin-bottom: .45rem; }
+.road { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: 1.2rem; }
+.road li { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: 1rem; }
+.road .when { font-family: var(--mono); font-size: .8rem; font-weight: 500; padding-top: .25rem; color: var(--blue); }
+@media (max-width: 520px) { .road li { grid-template-columns: 1fr; gap: .1rem; } }
+.goal { background: var(--sheet); border: 1.5px solid var(--ink); padding: 1rem 1.2rem; margin-top: 1.5rem; }
+.goal p { margin: 0; font-size: 1.06rem; }
+.files { font-family: var(--mono); font-size: .82rem; list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
+.files span { color: var(--ink-soft); font-family: var(--text); font-size: .95rem; }
+footer.end { margin-top: 4rem; padding-top: 1rem; border-top: 1px dotted var(--ink-soft); font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+
+@media print {
+  :root { --paper: #fff; --sheet: #fff; --grid: transparent; }
+  body { padding-block: 0; font-size: 10.5pt; }
+  .sec { margin-block: 1.6rem; break-inside: avoid-page; }
+  figure, .specimen, .goal, .cases li, .steps li { break-inside: avoid; }
+  a { color: inherit; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="meta"><span>Progress report for Prof. Tarak Patra</span><span>B.Tech project, IIT Madras</span><span>Rohith Korukonda</span><span>23 November 2026</span></p>
+  <h1>How long are the chains, and what does that do to the material?</h1>
+  <p class="lede">This is a report on my project: a dataset that links the molecular-weight numbers polymer papers report (Mn, Mw, Đ and a few others) to properties measured on the same samples, with the table row or sentence behind every value. It is not finished. Below is what exists today, what went wrong on the way, and what I plan to do next.</p>
+</header>
+
+<section class="sec" aria-labelledby="h-now">
+  <div class="main">
+    <h2 id="h-now">Where things stand</h2>
+    <dl class="ledger">
+      <div class="row"><dt>Papers found by search</dt><i class="lead" aria-hidden="true"></i><dd>3,198</dd></div>
+      <div class="row"><dt>Papers with legal open-access full text</dt><i class="lead" aria-hidden="true"></i><dd>1,101</dd></div>
+      <div class="row"><dt>Records in the dataset today</dt><i class="lead" aria-hidden="true"></i><dd>1,086</dd></div>
+      <div class="row"><dt>&nbsp;&nbsp;on polymer samples from papers</dt><i class="lead" aria-hidden="true"></i><dd>617 / 109</dd></div>
+      <div class="row"><dt>&nbsp;&nbsp;checked by me against the paper</dt><i class="lead" aria-hidden="true"></i><dd>697</dd></div>
+      <div class="row"><dt>&nbsp;&nbsp;two readers agree, audit under way</dt><i class="lead" aria-hidden="true"></i><dd>389</dd></div>
+      <div class="row"><dt>Audit result so far</dt><i class="lead" aria-hidden="true"></i><dd>18 of 21 correct</dd></div>
+      <div class="row"><dt>Records waiting for parser fixes</dt><i class="lead" aria-hidden="true"></i><dd>about 640</dd></div>
+      <div class="row gap"><dt>Original aim, verified records</dt><i class="lead" aria-hidden="true"></i><dd>about 4,600</dd></div>
+    </dl>
+    <p style="margin-top:1.1rem">The honest reading: the pipeline works end to end and the first release is out, but I am roughly a quarter of the way to the original target. Most of the gap is a parser problem I now understand, not a shortage of papers.</p>
+  </div>
+  <aside class="aside">
+    <span class="tag">In plain words</span>
+    <p>A <em>record</em> is one row: one polymer sample, its molecular-weight numbers, and one measured property, with the place in the paper it came from.</p>
+    <p>617 / 109 means 617 distinct samples from 109 papers.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-why">
+  <div class="main">
+    <h2 id="h-why">Why this data is worth collecting</h2>
+    <p>A polymer is not one molecule. It is millions of chains of different lengths. The average length (Mn, Mw, Mz) and how widely the lengths vary (Đ) shift the glass transition, the viscosity, the strength and how the material can be processed.</p>
+    <p>Papers do report these numbers, but each in its own units and table layout, sometimes only in a sentence of the experimental section. To compare them you currently read the papers one by one. I am putting them in a single table where every value keeps its source next to it. Once that table is large and clean enough, three things become possible:</p>
+    <ul class="plain">
+      <li><b>Predict.</b> Give a sample's Mn and Đ and get an estimate of its Tg or viscosity.</li>
+      <li><b>Find.</b> Ask for every sample with Mw under 50,000 g/mol and Tg above 100 °C, and get the list with sources.</li>
+      <li><b>Answer with evidence.</b> Ask a question in plain English and get an answer that quotes the sentence it came from.</li>
+    </ul>
+    <p>Early versions of all three are in the review app. They use only human-checked records, and there are not enough of those yet for the results to mean much.</p>
+
+    <figure>
+      <svg viewBox="0 0 520 252" role="img" aria-label="A skewed molar-mass distribution curve with markers for Mn, Mw and Mz in increasing order">
+        <text x="30" y="16" class="soft">share of chains</text>
+        <path class="curve" d="M30,200 C70,198 100,170 130,110 C150,70 165,52 185,52 C215,52 235,95 270,140 C310,180 380,196 500,200 Z"/>
+        <line class="axis" x1="30" y1="200" x2="500" y2="200"/>
+        <line class="mk" x1="150" y1="44" x2="150" y2="200"/>
+        <line class="mk" x1="205" y1="44" x2="205" y2="200"/>
+        <line class="mk" x1="262" y1="44" x2="262" y2="200"/>
+        <text x="150" y="36" text-anchor="middle">Mn</text>
+        <text x="205" y="36" text-anchor="middle">Mw</text>
+        <text x="262" y="36" text-anchor="middle">Mz</text>
+        <line class="mk-amber" x1="150" y1="221" x2="205" y2="221"/>
+        <line class="mk-amber" x1="150" y1="215" x2="150" y2="227"/>
+        <line class="mk-amber" x1="205" y1="215" x2="205" y2="227"/>
+        <text x="213" y="225">Đ = Mw / Mn</text>
+        <text x="500" y="244" text-anchor="end" class="soft">molar mass, g/mol →</text>
+      </svg>
+      <figcaption>One sample, one distribution. The long chains in the tail pull Mw and Mz above Mn, and Đ measures how far apart they sit. Schematic, not measured data.</figcaption>
+    </figure>
+  </div>
+  <aside class="aside">
+    <span class="tag">In plain words</span>
+    <p>Mn counts every chain once. Mw gives long chains more weight, and Mz even more. That is why Mn &lt; Mw &lt; Mz for any real sample.</p>
+    <p>DP is the same information counted in repeat units instead of g/mol. It is common for cellulose, where papers rarely give Mn.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-how">
+  <div class="main">
+    <h2 id="h-how">How the dataset is built</h2>
+    <p>Five stages. Nothing here is generated from scratch: a number enters the dataset only if it can be found in the paper.</p>
+    <ol class="steps">
+      <li><div>
+        <h3>Find the papers</h3>
+        <p>Search the OpenAlex index with polymer-specific queries, then filter for relevance.</p>
+        <p class="sofar">so far <b>3,198 papers</b></p>
+      </div></li>
+      <li><div>
+        <h3>Get the full text, legally</h3>
+        <p>Only papers with an open licence. Paywalled papers are logged and skipped. I do not scrape publisher sites.</p>
+        <p class="sofar">so far <b>1,101</b> usable &middot; 33 paywalled &middot; 34 open PDFs not parsed yet &middot; 121 unclear</p>
+      </div></li>
+      <li><div>
+        <h3>Read every paper twice</h3>
+        <p>A rule-based reader pulls numbers out of the tables. Separately, an AI model reads the relevant tables and passages. Each value must appear word for word in the paper, or it is thrown away. A record counts as double-found only when both readers agree.</p>
+        <p class="sofar">so far AI reader has covered <b>504 papers</b>; about 600 downloaded papers are still waiting</p>
+      </div></li>
+      <li><div>
+        <h3>Run automatic checks</h3>
+        <p>Five groups of checks: data format, evidence match, unit conversion, physical plausibility, and internal consistency (for example Mw / Mn must match the reported Đ). A record that fails is blocked and cannot be accepted.</p>
+      </div></li>
+      <li><div>
+        <h3>A person checks</h3>
+        <p>I compare each table or passage with the original and then accept, reject, or send it back for re-extraction. Every decision is logged with the exact values I saw.</p>
+        <p class="sofar">so far <b>1,045 records</b> decided by hand</p>
+      </div></li>
+    </ol>
+
+    <figure>
+      <ul class="bars" aria-label="Papers at each stage">
+        <li><span class="lab">Found by search</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">3,198</span></li>
+        <li><span class="lab">Open-access full text</span><span class="track"><span class="fill" style="width:34.4%"></span></span><span class="val">1,101</span></li>
+        <li><span class="lab">Gave candidate records</span><span class="track"><span class="fill" style="width:5.4%"></span></span><span class="val">173</span></li>
+        <li><span class="lab">In the released dataset</span><span class="track"><span class="fill" style="width:3.4%"></span></span><span class="val">109</span></li>
+      </ul>
+      <figcaption>Papers, drawn to scale. Most papers do not report a molecular-weight descriptor and a property for the same sample, so the funnel narrows hard. The middle will fill out as the remaining downloaded papers are read.</figcaption>
+    </figure>
+  </div>
+  <aside class="aside">
+    <span class="tag">In plain words</span>
+    <p><b>Open-access XML.</b> The structured version of an article. Tables arrive as real rows and columns instead of a picture, which is why these papers are far easier to read automatically.</p>
+    <p><b>AI reader.</b> A language model used only as a reading tool. It can point at a number in the text. It is not allowed to supply one.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-rec">
+  <div class="main">
+    <h2 id="h-rec">One record, up close</h2>
+    <p>This pair comes from a single sentence in a 2024 paper on high-molar-mass polycarbonates. It shows what the dataset is for: the same polymer at two chain lengths, and what happened to Tg.</p>
+    <article class="specimen" aria-label="Example record">
+      <header>
+        <h3>High Molar Mass Polycarbonates as Closed-Loop Recyclable Thermoplastics</h3>
+        <p class="src">J. Am. Chem. Soc. 2024 &middot; doi:10.1021/jacs.3c14170</p>
+      </header>
+      <div class="pair">
+        <div>
+          <h4>PvCHC-16</h4>
+          <dl class="kv">
+            <div><dt>Mn</dt><dd>16,000 g/mol</dd></div>
+            <div><dt>Đ</dt><dd>1.10</dd></div>
+            <div><dt>Tg (DSC)</dt><dd>112 °C</dd></div>
+          </dl>
+        </div>
+        <div>
+          <h4>PvCHC-82</h4>
+          <dl class="kv">
+            <div><dt>Mn</dt><dd>81,900 g/mol</dd></div>
+            <div><dt>Đ</dt><dd>1.07</dd></div>
+            <div><dt>Tg (DSC)</dt><dd>118 °C</dd></div>
+          </dl>
+        </div>
+      </div>
+      <blockquote>“…PvCHC with Mn 16 kg mol⁻¹ shows a glass transition temperature of 112 °C, whereas the sample with Mn 82 kg mol⁻¹ shows a Tg of 118 °C.”</blockquote>
+      <footer>status: accepted by hand &middot; values stored in kelvin and g/mol, original units kept alongside</footer>
+    </article>
+    <figure>
+      <svg viewBox="0 0 320 178" role="img" aria-label="Two points: Tg 112 degrees Celsius at 16,000 g/mol and 118 degrees at 81,900 g/mol, joined by a line">
+        <line class="axis" x1="44" y1="142" x2="296" y2="142"/>
+        <line class="axis" x1="44" y1="142" x2="44" y2="14"/>
+        <text x="44" y="160" text-anchor="middle" class="soft">10,000</text>
+        <text x="264" y="160" text-anchor="middle" class="soft">100,000</text>
+        <text x="296" y="174" text-anchor="end" class="soft">Mn, g/mol (log scale)</text>
+        <text x="38" y="146" text-anchor="end" class="soft">105</text>
+        <text x="38" y="91" text-anchor="end" class="soft">115</text>
+        <text x="38" y="36" text-anchor="end" class="soft">125</text>
+        <text x="50" y="12" class="soft">Tg, °C</text>
+        <line class="mk-amber" x1="89" y1="98" x2="245" y2="65"/>
+        <circle class="pt" cx="89" cy="98" r="6"/>
+        <circle class="pt" cx="245" cy="65" r="6"/>
+        <text x="97" y="118">112</text>
+        <text x="223" y="52">118</text>
+      </svg>
+      <figcaption>The relationship one pair of records captures. The dataset holds several hundred of these, from different polymers and methods.</figcaption>
+    </figure>
+  </div>
+  <aside class="aside">
+    <span class="tag">Why it is traceable</span>
+    <p>Every row keeps the DOI, the licence, the table or section, and the verbatim sentence. If a value looks wrong, anyone can open the paper and check it in a minute.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-have">
+  <div class="main">
+    <h2 id="h-have">What is in it today</h2>
+    <p>Properties, by number of records:</p>
+    <ul class="bars" aria-label="Records per property">
+      <li><span class="lab">Glass transition (Tg)</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">531</span></li>
+      <li><span class="lab">Decomposition temperature</span><span class="track"><span class="fill" style="width:20.5%"></span></span><span class="val">109</span></li>
+      <li><span class="lab">Zero-shear viscosity</span><span class="track"><span class="fill" style="width:14.5%"></span></span><span class="val">77</span></li>
+      <li><span class="lab">Elongation at break</span><span class="track"><span class="fill" style="width:13%"></span></span><span class="val">69</span></li>
+      <li><span class="lab">Intrinsic viscosity</span><span class="track"><span class="fill" style="width:12.2%"></span></span><span class="val">65</span></li>
+      <li><span class="lab">Tensile strength</span><span class="track"><span class="fill" style="width:11.9%"></span></span><span class="val">63</span></li>
+      <li><span class="lab">Young’s modulus</span><span class="track"><span class="fill" style="width:10.5%"></span></span><span class="val">56</span></li>
+      <li><span class="lab">Toughness, density, moduli, other</span><span class="track"><span class="fill" style="width:21.4%"></span></span><span class="val">116</span></li>
+    </ul>
+    <p style="margin-top:1.4rem">Molecular-weight descriptors, by number of records that report them:</p>
+    <ul class="bars" aria-label="Records per descriptor">
+      <li><span class="lab">Mn</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">804</span></li>
+      <li><span class="lab">Mw</span><span class="track"><span class="fill" style="width:86.3%"></span></span><span class="val">694</span></li>
+      <li><span class="lab">Dispersity (Đ)</span><span class="track"><span class="fill" style="width:78.5%"></span></span><span class="val">631</span></li>
+      <li><span class="lab">Mz</span><span class="track"><span class="fill" style="width:10.3%"></span></span><span class="val">83</span></li>
+      <li><span class="lab">DPn</span><span class="track"><span class="fill" style="width:4.7%"></span></span><span class="val">38</span></li>
+      <li><span class="lab">DPw</span><span class="track"><span class="fill" style="width:1.4%"></span></span><span class="val">11</span></li>
+      <li><span class="lab">DPz, skewness, kurtosis</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="val">0</span></li>
+    </ul>
+    <p style="margin-top:1.1rem">The schema has all nine descriptors, but papers rarely report the last three, so those columns are empty for now.</p>
+  </div>
+  <aside class="aside">
+    <span class="tag">Reading the numbers</span>
+    <p>Records can report more than one descriptor, so the second list does not add up to 1,086.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-hard">
+  <div class="main">
+    <h2 id="h-hard">What went wrong along the way</h2>
+    <p>Reviewing by hand is where I learned the most. Of the 1,045 records I decided on, about two in three were fine as extracted. The rest were not.</p>
+    <div role="img" aria-label="Of 1,045 reviewed records, 698 accepted, 192 rejected, 155 sent back for re-extraction">
+      <div class="stack"><span style="width:66.8%;background:var(--ok)"></span><span style="width:18.4%;background:var(--no)"></span><span style="width:14.8%;background:var(--warn)"></span></div>
+      <ul class="legend">
+        <li><i style="background:var(--ok)"></i>698 accepted</li>
+        <li><i style="background:var(--no)"></i>192 rejected</li>
+        <li><i style="background:var(--warn)"></i>155 sent back for re-extraction</li>
+      </ul>
+    </div>
+    <p style="margin-top:1rem">“Rejected” means the numbers were copied correctly but should not be in the dataset. “Sent back” means the paper has good data and my extraction mangled it. Here are the six kinds of trouble, with a real example of each.</p>
+    <ol class="cases">
+      <li>
+        <span class="kind">layout</span>
+        <h3>Two numbers in one cell</h3>
+        <p>Some tables write Mn and Đ together, like “121.6 [1.09]”. The first parser read that as a single number, so a dispersity of 121.6 appeared. The plausibility check blocked those rows, and I sent the tables back.</p>
+      </li>
+      <li>
+        <span class="kind">units</span>
+        <h3>A missing power of ten</h3>
+        <p>Headers like “Mw × 10⁻³” or “MW (10⁶)” carry the scale. With it dropped, a 22,000 g/mol polymer became 22 g/mol. In one table the superscript was lost and 10⁵ simply read “105”. The range check caught most of these. A value of 70 g/mol slipped through and I only noticed it by looking at the table.</p>
+      </li>
+      <li>
+        <span class="kind">wrong column</span>
+        <h3>Columns that look right and are not</h3>
+        <p>A column called “E′ at Tg − 20 °C” was read as the glass transition, and so was “Tg breadth”. In another table the header changed halfway down, so crystallisation and melting temperatures of the PEG rows became Tg values. The abbreviation PSU meant polysulfone to the software and a PDMS-based polyurea to the authors.</p>
+      </li>
+      <li>
+        <span class="kind">not a measurement</span>
+        <h3>True numbers that do not belong</h3>
+        <p>A value can be copied perfectly and still be unusable: a density from the supplier’s datasheet, a Tg from a molecular-dynamics simulation, a molecular weight calculated from the very viscosity it is meant to explain, a clay nanocomposite, a crosslinked network, a gel with no stated concentration. I wrote rules for these and rejected them even when the extraction was flawless.</p>
+      </li>
+      <li>
+        <span class="kind">AI error</span>
+        <h3>The AI fills gaps</h3>
+        <p>When a paper gave only Mn, the AI reader once copied it into Mw as well. That produced Mw equal to Mn with a dispersity of 1.17, which cannot be true. It is the main reason a record needs a second reader, a word-for-word evidence match and a person, and why I want a stricter Mw / Mn check.</p>
+      </li>
+      <li>
+        <span class="kind">access</span>
+        <h3>Only what is legally open</h3>
+        <p>I do not bypass paywalls. Of 1,318 papers checked for full text, 1,101 were usable. The cost is bias: 79% of today’s records come from MDPI journals, which publish open access, and 60% from one of them (<i>Polymers</i>).</p>
+      </li>
+    </ol>
+  </div>
+  <aside class="aside">
+    <span class="tag">Why this matters for the result</span>
+    <p>An automatic pipeline alone would have put several hundred wrong or misleading rows into the dataset, and each one would have looked confident. The checks and the review are part of the method, not a clean-up step.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-trust">
+  <div class="main">
+    <h2 id="h-trust">How much to trust it</h2>
+    <p>The 1,086 records are not all equal, and the dataset labels which is which.</p>
+    <div class="scroll">
+    <table class="tiers">
+      <thead><tr><th>Tier</th><th>Records</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td>Checked by me</td><td>697</td><td>I compared each value with the table or sentence in the paper and accepted it.</td></tr>
+        <tr><td>Two readers agree</td><td>389</td><td>The table reader and the AI reader found the same numbers, the text matches the paper word for word, and no check failed. I have not confirmed these myself yet.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>To find out how reliable the second tier is, I check a random sample of it. 21 of 100 sampled records are done so far, and 18 were correct.</p>
+    <div class="dots" role="img" aria-label="Audit progress: 18 correct, 3 wrong, 79 not yet checked, out of 100 sampled records"><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="y"></span><span class="n"></span><span class="n"></span><span class="n"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <p class="mono" style="color:var(--ink-soft);margin:0 0 1rem">green correct &middot; red wrong &middot; empty not checked yet</p>
+    <p>18 of 21 is 86%, but with so few checked the true figure could sit anywhere from about 65% to 95%. I will not count the second tier as verified until at least 100 records are audited and the lower end of that range reaches 90%. The three wrong ones were all about material scope (a grafted nanoparticle, a polymer blend, and one theoretical value), not wrong numbers.</p>
+    <h3 style="margin-top:1.6rem">Known gaps</h3>
+    <ul class="plain" style="margin-top:.6rem">
+      <li>Half of the records (49%) are glass-transition temperatures. Other properties are thin.</li>
+      <li>57% of records still carry the paper’s own sample name instead of a standard polymer family.</li>
+      <li>Coverage is open-access only, and mostly MDPI (79%), with papers from 2013 to 2026.</li>
+      <li>DPz, skewness and kurtosis are empty.</li>
+      <li>I have not trained any prediction model yet. The data is not ready for that to mean anything.</li>
+    </ul>
+  </div>
+  <aside class="aside">
+    <span class="tag">In plain words</span>
+    <p><b>Audit.</b> Checking a random sample to estimate how often the machine is right, the way a quality inspector tests a batch instead of every item.</p>
+    <p><b>The range 65 to 95%.</b> A small sample cannot pin an accuracy down exactly. This range is how the uncertainty is stated honestly.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-next">
+  <div class="main">
+    <h2 id="h-next">Where it is going</h2>
+    <ol class="road">
+      <li>
+        <span class="when">Next</span>
+        <div>
+          <h3>Fix what the review exposed</h3>
+          <p>Teach the parser to split “Mn [Đ]” cells, keep scale factors, ignore Tg look-alike columns, read the polymer class from the paper’s title, and capture test conditions such as temperature, frequency and draw ratio. Then re-run the roughly 640 records now waiting. I do not yet know how many will survive review, and I will report the real number after the re-run.</p>
+          <p>Finish the audit (79 of 100 still to check) and keep reading the downloaded papers that have not been read yet.</p>
+        </div>
+      </li>
+      <li>
+        <span class="when">Then</span>
+        <div>
+          <h3>Widen the coverage</h3>
+          <p>More search queries across other polymer families and properties, and the 34 open-access PDFs the pipeline cannot yet parse. Add standard polymer-family names to the records that lack them.</p>
+        </div>
+      </li>
+      <li>
+        <span class="when">After that</span>
+        <div>
+          <h3>Use it</h3>
+          <p>First baseline models, for example Tg against Mn and Đ within one polymer family, and a proper test of the find and answer tools on verified data.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="goal">
+      <p><b>End goal.</b> An openly documented dataset of a few thousand verified records (the original aim was about 4,600), where every value can be traced to the sentence or table row it came from, with the predict, find and answer tools built on top of it.</p>
+    </div>
+  </div>
+  <aside class="aside">
+    <span class="tag">A note on the target</span>
+    <p>The aim stays at about 4,600 verified records. What I can promise today is the method, and a number that is checked rather than inflated.</p>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-ask">
+  <div class="main">
+    <h2 id="h-ask">What I would like from you</h2>
+    <ul class="plain">
+      <li><b>Scope rules.</b> I exclude composites, blends, crosslinked or filled samples, supplier datasheet values, simulations, and values calculated from the property itself. You will know better than I do where those lines should sit. Please tell me if any should change.</li>
+      <li><b>Priorities.</b> Tg is half the dataset. Which properties or polymer families would be most useful to deepen first?</li>
+      <li><b>A spot check, if you have the time.</b> Ten records picked at random, checked against their papers. Even that small outside check would tell me more than my own review can.</li>
+    </ul>
+    <h3 style="margin-top:1.8rem">Attached</h3>
+    <ul class="files" style="margin-top:.7rem">
+      <li>polyextract_dataset_v0.1.csv <span>1,086 records, flat table</span></li>
+      <li>samples_v0.1.csv, measurements_v0.1.csv <span>the same data split by sample and by measurement</span></li>
+      <li>DATASHEET.md <span>how it was built and every count in this report</span></li>
+      <li>The review app <span>for a live look at any record and its source</span></li>
+    </ul>
+  </div>
+  <aside class="aside">
+    <span class="tag">Where the numbers come from</span>
+    <p>Every figure in this report is read from the project database as of the 23 November build, and matches the datasheet.</p>
+  </aside>
+</section>
+
+<footer class="end">PolyExtract &middot; build v0.1 &middot; 23 November 2026</footer>
+</div>

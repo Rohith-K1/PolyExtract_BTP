@@ -1,0 +1,144 @@
+# Deterministic Stage-1 metadata filters. Bump `version` whenever terms or rules change:
+# the version is stored with every decision so results stay reproducible.
+version: "filters-v2"
+# v2 (2026-11-05): added R0 publication-identity rule after the live run accepted Wikipedia pages.
+
+year_range: [1960, 2026]
+
+# R0: web-search-only hits without a DOI. These URL fragments are not scholarly publications -> REJECT.
+# Any other DOI-less web hit is capped at REVIEW (publication identity unverified).
+non_scholarly_url_patterns:
+  - wikipedia.org
+  - wikiwand.com
+  - sciencedirect.com/topics
+  - vedantu.com
+  - byjus.com
+  - chegg.com
+  - quora.com
+  - reddit.com
+  - youtube.com
+  - brainly.
+  - studocu.com
+  - coursehero.com
+  - slideshare.net
+  - scribd.com
+  - polymerchar.com/library
+  - sigmaaldrich.com
+  - linkedin.com
+  - medium.com
+
+# Lower-cased document types (OpenAlex + Crossref vocabularies).
+allowed_document_types:
+  [article, journal-article, proceedings-article, preprint, posted-content, letter, report, dissertation]
+hard_excluded_document_types:
+  [erratum, retraction, editorial, paratext, book-review, peer-review, component, dataset, review]
+# 'review' is excluded because review articles rarely report primary sample-level measurements; they may
+# still be useful for finding primary papers via references (planned, not implemented).
+
+fields: [title, abstract, keywords, snippet]
+
+# Each pattern is a regex. Plain strings are case-insensitive; use {re: ..., cs: true} for case-sensitive.
+term_groups:
+  polymer:
+    - '\bpolymer'
+    - '\bcopolymer'
+    - '\bhomopolymer'
+    - '\bmacromolecul'
+    - '\bpoly\s?\('
+    - '\bpoly(?:styrene|carbonate|isoprene|butadiene|isobutylene|sulfone|ethersulfone|etherimide|imide|lactide|vinyl|acrylate|methacrylate|siloxane|propylene|ethylene|ester|amide|urethane|phenylene|norbornene|caprolactone|oxazoline)'
+    - {re: '\b(?:PMMA|PDMS|PVC|PVAc|PIB|PDLLA|PnBA|PtBA|PEMA|PBMA|PSU|PES|PEI|PPO|PLA|PVP)\b', cs: true}
+  molecular_weight:
+    - '\bmolecular[\s-]weights?\b'
+    - '\bmolar[\s-]mass'
+    - '\bnumber[\s-]average'
+    - '\bweight[\s-]average'
+    - '\bz[\s-]average'
+    - '\bchain[\s-]length'
+    - '\bdegree of polymeri[sz]ation'
+    - '\bentanglement molecular weight'
+    - '\b(?:gel permeation|size[\s-]exclusion) chromatography'
+    - {re: '\b(?:GPC|SEC|MALDI)\b', cs: true}
+    - {re: '\bM[nwz]\b', cs: true}
+    - {re: '\bDP[nw]?\b', cs: true}
+    - '\bkg\s?/\s?mol\b'
+    - {re: '\bk?Da\b', cs: true}
+  mwd:
+    - '\bmolecular[\s-]weight distributions?'
+    - '\bmolar[\s-]mass distributions?'
+    - '\bchain[\s-]length distribution'
+    - '\bdispersity'
+    - '\bpolydispersity'
+    - {re: '\bPDI\b', cs: true}
+    - {re: 'Đ', cs: true}
+    - '\bmw\s?/\s?mn\b'
+    - '\bbimodal'
+    - '\bskewness'
+    - '\bkurtosis'
+    - '\bnarrow(?:ly)?[\s-]distributed'
+    - '\bbroad(?:ened)? (?:molecular|molar)'
+  property:
+    - '\bglass[\s-]transition'
+    - {re: '\bT_?g\b', cs: true}
+    - '\bviscosit'
+    - '\brheolog'
+    - '\bviscoelastic'
+    - '\bstorage modul'
+    - '\bloss modul'
+    - '\bplateau modul'
+    - "\\byoung'?s modul"
+    - '\belastic modul'
+    - '\btensile'
+    - '\belongation at break'
+    - '\btoughness'
+    - '\bfracture'
+    - '\bthermal (?:stability|degradation|decomposition)'
+    - '\bthermogravimetric'
+    - {re: '\b(?:DSC|DMA|TGA|DMTA)\b', cs: true}
+    - '\bdensity\b'
+    - '\bmechanical propert'
+  amorphous:
+    - '\bamorphous'
+    - '\bglassy'
+    - '\bnon-?crystalline'
+    - '\batactic'
+    - '\bpolystyrene'
+    - '\bpoly\s?\(methyl methacrylate\)'
+    - '\bpolycarbonate'
+    - '\bpoly(?:isobutylene|isoprene|butadiene|sulfone|ethersulfone|etherimide)'
+    - '\bpoly\s?\(vinyl chloride\)'
+    - '\bpoly\s?\(dimethylsiloxane\)'
+    - {re: '\b(?:PMMA|PDMS|PVC|PIB|PDLLA|PSU|PES|PEI)\b', cs: true}
+  semicrystalline:
+    - '\bsemi-?crystalline'
+    - '\bcrystallinity'
+    - '\bspherulit'
+    - '\bpolyethylene\b'
+    - '\bisotactic polypropylene'
+    - '\bnylon'
+    - '\bpoly\s?\(ethylene terephthalate\)'
+    - {re: '\b(?:HDPE|LDPE|LLDPE|UHMWPE|iPP|PEEK|PET|PCL|PVDF)\b', cs: true}
+  off_topic:  # strong indicators the paper is not about bulk synthetic polymer properties
+    - '\bprotein'
+    - '\bDNA\b'
+    - '\bdrug delivery'
+    - '\bcell culture'
+    - '\bbiomedical'
+    - '\bwastewater'
+    - '\bsoil\b'
+  simulation_only:  # computational papers usually carry no experimental measurements
+    - '\bmolecular dynamics simulation'
+    - '\bcoarse[\s-]grained (?:model|simulation)'
+    - '\bdensity functional theory'
+    - '\bmonte carlo simulation'
+    - '\bfirst[\s-]principles'
+
+# Score weights (ranking only; the decision comes from the rules in filters.py).
+weights:
+  polymer: 1.0
+  molecular_weight: 2.0
+  mwd: 2.0
+  property: 2.0
+  amorphous: 1.0
+  semicrystalline: -0.5
+  off_topic: -2.0
+  simulation_only: -1.5
